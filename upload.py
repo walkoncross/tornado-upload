@@ -35,7 +35,12 @@ class IndexHandler(tornado.web.RequestHandler):
 
 class UploadHandler(tornado.web.RequestHandler):
     def post(self):
-        file1 = self.request.files['file1'][0]
+        files = self.request.files
+        if 'file1' not in files or not len(files['file1']):
+            self.finish("<strong>No file selected!!! Please go back and select a file.</strong> <br /> <a href='/'> Back </a>")
+            return
+
+        file1 = files['file1'][0]
         # print 'request.arguments', self.request.arguments
         # print 'request.query_arguments', self.request.query_arguments
         # print 'request.body_arguments', self.request.body_arguments
@@ -60,7 +65,7 @@ class UploadHandler(tornado.web.RequestHandler):
         output_file.close()
 
         print "file %s is uploaded, saved as %s" % (original_fname, save_fname)
-        self.finish("file %s is uploaded, saved as %s" %
+        self.finish("file %s is uploaded, saved as %s <br /> <a href='/'> Back </a>" %
                     (original_fname, save_fname))
 
 
