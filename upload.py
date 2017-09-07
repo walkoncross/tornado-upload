@@ -15,7 +15,9 @@ default_save_dir = './uploads'
 
 print "Default save dir: " + default_save_dir
 if not osp.exists(default_save_dir):
+    print "Create defulat save dir: " + default_save_dir
     os.makedirs(default_save_dir)
+
 
 class Application(tornado.web.Application):
     def __init__(self):
@@ -34,10 +36,18 @@ class IndexHandler(tornado.web.RequestHandler):
 class UploadHandler(tornado.web.RequestHandler):
     def post(self):
         file1 = self.request.files['file1'][0]
+        # print 'request.arguments', self.request.arguments
+        # print 'request.query_arguments', self.request.query_arguments
+        # print 'request.body_arguments', self.request.body_arguments
+
+        save_dir = self.request.arguments['save_dir'][0]
+        if not osp.exists(save_dir):
+            save_dir = default_save_dir
+
         original_fname = file1['filename']
         print "Received file: " + original_fname
 
-        save_fname = osp.join(default_save_dir, original_fname)
+        save_fname = osp.join(save_dir, original_fname)
 
         if osp.exists(save_fname):
             splits = osp.splitext(save_fname)
