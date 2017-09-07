@@ -1,7 +1,10 @@
-import os.path as osp
 import os
+import os.path as osp
+
 import random
 import string
+
+import logging
 
 import tornado.httpserver
 import tornado.ioloop
@@ -9,13 +12,24 @@ import tornado.web
 
 from tornado.options import define, options
 
+# set logging
+_log = logging.getLogger(__name__)
+handler = logging.StreamHandler()
+formatter = logging.Formatter(
+    '%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+handler.setFormatter(formatter)
+_log.addHandler(handler)
+_log.setLevel(logging.DEBUG)
+
+# define listening port
 define("port", default=8899, help="run on the given port", type=int)
 
+# set default save dir
 default_save_dir = './uploads'
 
-print "Default save dir: " + default_save_dir
+_log.debug("Default save dir: " + default_save_dir)
 if not osp.exists(default_save_dir):
-    print "Create defulat save dir: " + default_save_dir
+    _log.debug("Create defulat save dir: " + default_save_dir)
     os.makedirs(default_save_dir)
 
 
@@ -37,7 +51,9 @@ class UploadHandler(tornado.web.RequestHandler):
     def post(self):
         files = self.request.files
         if 'file1' not in files or not len(files['file1']):
-            self.finish("<strong>No file selected!!! Please go back and select a file.</strong> <br /> <a href='/'> Back </a>")
+            _log.debug("No file uploaded")
+            self.finish(
+                "<strong>No file selected!!! Please go back and select a file.</strong> <br /> <a href='/'> Back </a>")
             return
 
         file1 = files['file1'][0]
@@ -50,7 +66,7 @@ class UploadHandler(tornado.web.RequestHandler):
             save_dir = default_save_dir
 
         original_fname = file1['filename']
-        print "Received file: " + original_fname
+        _log.debug("Received file: " + original_fname)
 
         save_fname = osp.join(save_dir, original_fname)
 
@@ -64,7 +80,8 @@ class UploadHandler(tornado.web.RequestHandler):
         output_file.write(file1['body'])
         output_file.close()
 
-        print "file %s is uploaded, saved as %s" % (original_fname, save_fname)
+        _log.debug("file %s is uploaded, saved as %s" %
+                   (original_fname, save_fname))
         self.finish("file %s is uploaded, saved as %s <br /> <a href='/'> Back </a>" %
                     (original_fname, save_fname))
 
